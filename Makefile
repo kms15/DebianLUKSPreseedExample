@@ -63,5 +63,5 @@ qemu-test-image.qcow2 : $(TARGET)
 # printf "temp" | ssh -o NoHostAuthenticationForLocalhost=True root@localhost -p 10023
 #
 qemu-test : qemu-test-image.qcow2 $(TARGET)
-	qemu-system-x86_64 -hda $< -cdrom $(TARGET) -m 512M -smp 1 -accel kvm #\
-#		-nic user,hostfwd=tcp:127.0.0.1:10022-:22,hostfwd=tcp:127.0.0.1:10023-:23 # -boot d
+	qemu-system-x86_64 -hda $< -cdrom $(TARGET) -m 512M -smp 1 -accel kvm \
+		-nic user,hostfwd=tcp:127.0.0.1:10022-:22,hostfwd=tcp:127.0.0.1:10023-:23 # -boot d
