@@ -1,0 +1,7 @@
+menuentry --hotkey=p '... Preseeded automated install' --id preseeded-automated-install {
+    set background_color=black
+    linux    /install.amd/vmlinuz file=/cdrom/preseed/autoinstall-preseed.seed auto=true priority=critical vga=788 lowmem/low=true --- quiet 
+    initrd   /install.amd/initrd.gz
+}
+GRUB_DEFAULT=preseeded-automated-install
+GRUB_TIMEOUT=5
