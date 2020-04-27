@@ -1,0 +1,12 @@
+    - block:
+        - name: check if the server is already unlocked
+          wait_for_connection:
+              connect_timeout: 5
+              timeout: 5
+      rescue:
+        - name: send the unlock string
+          local_action: command /bin/bash -c "printf \"{{ luks_password }}\" | ssh root@{{ ansible_host }} -p {{ dropbear_port }}"
+        - name: wait for the server to come up to confirm that it successfully unlocked
+          wait_for_connection:
+              connect_timeout: 1
+              timeout: 30

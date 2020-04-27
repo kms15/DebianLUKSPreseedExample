@@ -1,0 +1,6 @@
+---
+ansible_port: 10022
+ansible_host: localhost
+dropbear_port: 10023
+ansible_become_pass: "{{ vault_ansible_become_pass }}"
+luks_password: "{{ vault_luks_password }}"

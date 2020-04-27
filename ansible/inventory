@@ -1,0 +1,3 @@
+# define a group containing the new server
+[qemu_test_machines]
+qemu_test ansible_port=10022 ansible_host=localhost
