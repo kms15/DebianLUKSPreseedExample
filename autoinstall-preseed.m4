@@ -441,7 +441,7 @@ d-i grub-installer/bootdev  string my_install_target
 # Use the following option to add additional boot parameters for the
 # installed system (if supported by the bootloader installer).
 # Note: options passed to the installer will be added automatically.
-#d-i debian-installer/add-kernel-opts string nousb
+d-i debian-installer/add-kernel-opts string nomodeset
 
 ### Finishing up the installation
 # During installations from serial console, the regular virtual consoles
@@ -505,7 +505,9 @@ d-i preseed/late_command string in-target mkdir /home/my_username/.ssh ; \
     sed -e 's/^/no-port-forwarding,no-agent-forwarding,no-x11-forwarding,command="\/bin\/cryptroot-unlock" /g' \
         /cdrom/authorized_keys > /target/etc/dropbear-initramfs/authorized_keys ; \
     echo PasswordAuthentication no >> /target/etc/ssh/sshd_config ; \
-    echo PermitRootLogin no >> /target/etc/ssh/sshd_config
+    echo PermitRootLogin no >> /target/etc/ssh/sshd_config ; \
+    echo GRUB_TERMINAL=console >> /target/etc/default/grub ; \
+    in-target update-grub
 
 # Verbose output and no boot splash screen.
 d-i debian-installer/quiet boolean false

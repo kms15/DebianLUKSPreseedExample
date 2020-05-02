@@ -64,4 +64,5 @@ qemu-test-image.qcow2 : $(TARGET)
 #
 qemu-test : qemu-test-image.qcow2 $(TARGET)
 	qemu-system-x86_64 -hda $< -cdrom $(TARGET) -m 512M -smp 1 -accel kvm \
-		-nic user,hostfwd=tcp:127.0.0.1:10022-:22,hostfwd=tcp:127.0.0.1:10023-:23 # -boot d
+		-nic user,hostfwd=tcp:127.0.0.1:10022-:22,hostfwd=tcp:127.0.0.1:10023-:23 \
+		-curses # -boot d
