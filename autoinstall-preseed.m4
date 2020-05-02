@@ -4,9 +4,6 @@
 # the initial machine will not allow password-based logins from the network
 # (only ssh-key based), so you should be able to change these passwords before
 # exposing any opportunities to exploit them.
-m4_define(my_username, kms15)
-m4_define(my_fullname, Kendrick Shaw)
-m4_define(my_password, temp) # Note: change after machine is built
 m4_define(my_luks_password, temp) # Note: change after machine is built
 m4_define(my_install_target, /dev/sda)
 
@@ -123,22 +120,22 @@ d-i mirror/http/proxy string
 ### Account setup
 # Skip creation of a root account (normal user account will be able to
 # use sudo).
-d-i passwd/root-login boolean false
+#d-i passwd/root-login boolean false
 # Alternatively, to skip creation of a normal user account.
-#d-i passwd/make-user boolean false
+d-i passwd/make-user boolean false
 
 # Root password, either in clear text
 #d-i passwd/root-password password r00tme
 #d-i passwd/root-password-again password r00tme
 # or encrypted using a crypt(3)  hash.
-#d-i passwd/root-password-crypted password [crypt(3) hash]
+d-i passwd/root-password-crypted password *
 
 # To create a normal user account.
-d-i passwd/user-fullname string my_fullname
-d-i passwd/username string my_username
+#d-i passwd/user-fullname string my_fullname
+#d-i passwd/username string my_username
 # Normal user's password, either in clear text
-d-i passwd/user-password password my_password
-d-i passwd/user-password-again password my_password
+#d-i passwd/user-password password my_password
+#d-i passwd/user-password-again password my_password
 # or encrypted using a crypt(3) hash.
 #d-i passwd/user-password-crypted password mypasswordhash
 # Create the first user with the specified UID instead of the default.
@@ -393,7 +390,7 @@ d-i pkgsel/include string openssh-server dropbear-initramfs
 # NB: These seem to be ignored by the installer, (see thread on the Debian
 # mailing list), so we instead set them manually with a late command.
 #d-i openssh-server/password-authentication boolean false
-#d-i openssh-server/permit-root-login boolean false
+#d-i openssh-server/permit-root-login boolean true
 
 # Some versions of the installer can report back on what software you have
 # installed, and what software you use. The default is not to report back,
@@ -497,15 +494,14 @@ d-i finish-install/reboot_in_progress note
 
 # copy authorized keys for the user and setup an SSH server on port 23 during
 # system booting to allow entering the LUKS password remotely.
-d-i preseed/late_command string in-target mkdir /home/my_username/.ssh ; \
-    in-target chmod go-rwx /home/my_username/.ssh ; \
-    cp /cdrom/authorized_keys /target/home/my_username/.ssh/authorized_keys ; \
-    in-target chown -R my_username:my_username /home/my_username/.ssh ; \
+d-i preseed/late_command string in-target mkdir /root/.ssh ; \
+    in-target chmod go-rwx /root/.ssh ; \
+    cp /cdrom/authorized_keys /target/root/.ssh/authorized_keys ; \
+    in-target chown -R root:root /root/.ssh ; \
     echo 'DROPBEAR_OPTIONS="-p 23 -s -j -k"' >> /target/etc/dropbear-initramfs/config ; \
     sed -e 's/^/no-port-forwarding,no-agent-forwarding,no-x11-forwarding,command="\/bin\/cryptroot-unlock" /g' \
         /cdrom/authorized_keys > /target/etc/dropbear-initramfs/authorized_keys ; \
     echo PasswordAuthentication no >> /target/etc/ssh/sshd_config ; \
-    echo PermitRootLogin no >> /target/etc/ssh/sshd_config ; \
     echo GRUB_TERMINAL=console >> /target/etc/default/grub ; \
     in-target update-grub
 
