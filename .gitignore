@@ -1,3 +1,5 @@
 *.iso
 iso
 *.qcow2
+id_iso_root_rsa
+id_iso_root_rsa.pub

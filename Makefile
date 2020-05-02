@@ -5,6 +5,7 @@ default: $(TARGET)
 
 clean:
 	rm -rf $(TARGET) iso qemu-test-image.qcow2
+	rm -rf id_iso_root_rsa{,.pub}
 
 # download the base install image
 buster_original.iso :
@@ -40,12 +41,19 @@ iso/isolinux/isolinux.cfg.orig: iso/README.txt
 iso/isolinux/isolinux.cfg : isolinux.cfg iso/isolinux/isolinux.cfg.orig
 	cp $< $@
 
-# include a list of initial authorized keys
-iso/authorized_keys: authorized_keys
+# generate an ssh public/private key pair to use to access machines created
+# with this iso
+id_iso_root_rsa.pub: id_iso_root_rsa
+id_iso_root_rsa:
+	ssh-keygen -b 4096 -t RSA -N "" -C "iso-temporary-root-key" -f ./$@
+
+# include the public temporary ssh key in the iso
+iso/authorized_keys: id_iso_root_rsa.pub
 	cp $< $@
 
 # generate the new iso install image
-$(TARGET): iso/preseed/autoinstall-preseed.seed iso/boot/grub/grub.cfg iso/isolinux/isolinux.cfg iso/authorized_keys
+$(TARGET): iso/preseed/autoinstall-preseed.seed iso/boot/grub/grub.cfg \
+		iso/isolinux/isolinux.cfg iso/authorized_keys
 	genisoimage -o $@ -b isolinux/isolinux.bin -c isolinux/boot.cat \
 		-no-emul-boot -boot-load-size 4 -boot-info-table -J -R \
 		-V "Debian Buster AutoInstall" iso
@@ -59,8 +67,8 @@ qemu-test-image.qcow2 : $(TARGET)
 # localhost:10022 to guest port 22 (ssh) and localhost:10023 to guest port 23
 # (dropbear ssh)
 #
-# Note that you can unlock VM in an automated fashion as follows:
-# printf "temp" | ssh -o NoHostAuthenticationForLocalhost=True root@localhost -p 10023
+# Note that you can unlock the VM in an automated fashion as follows:
+# printf "temp" | ssh root@localhost -p 10023 -i id_iso_root_rsa
 #
 qemu-test : qemu-test-image.qcow2 $(TARGET)
 	qemu-system-x86_64 -hda $< -cdrom $(TARGET) -m 512M -smp 1 -accel kvm \
