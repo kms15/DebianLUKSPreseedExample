@@ -1,0 +1,10 @@
+# D-I config version 2.0
+# search path for the c32 support libraries (libcom32, libutil etc.)
+path debian-installer/amd64/boot-screens/
+label autoinst
+	menu label ^Automated preseeded install
+	kernel debian-installer/amd64/linux
+	append auto=true priority=critical nomodeset initrd=debian-installer/amd64/initrd0.gz lowmem/low=true --- 
+default autoinst
+prompt 0
+timeout 1

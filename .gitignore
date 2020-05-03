@@ -3,3 +3,8 @@ iso
 *.qcow2
 id_iso_root_rsa
 id_iso_root_rsa.pub
+*.swp
+initrd.pxe
+tftp
+TFTP_COMPLETE_TAG
+netboot.tar.gz
