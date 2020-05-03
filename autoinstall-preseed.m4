@@ -16,8 +16,8 @@ m4_define(my_install_target, /dev/sda)
 d-i debian-installer/locale string en_US
 
 # The values can also be preseeded individually for greater flexibility.
-#d-i debian-installer/language string en
-#d-i debian-installer/country string NL
+d-i debian-installer/language string en
+d-i debian-installer/country string US
 #d-i debian-installer/locale string en_GB.UTF-8
 # Optionally specify additional locales to be generated.
 #d-i localechooser/supported-locales multiselect en_US.UTF-8, nl_NL.UTF-8
