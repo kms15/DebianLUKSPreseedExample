@@ -1,29 +1,35 @@
-TARGET=buster_autoinstall.iso
-BUSTERURL=https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-10.3.0-amd64-netinst.iso
+TARGET_ISO=debian_luks_autoinstall.iso
+DEBIAN_ISO_URL=https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-10.3.0-amd64-netinst.iso
+ISO_EXTRACTED_FLAG=iso/README.txt
 
-default: $(TARGET)
+default: $(TARGET_ISO)
 
 clean:
-	rm -rf $(TARGET) iso qemu-test-image.qcow2
+	rm -rf $(TARGET_ISO) iso qemu-test-image.qcow2
 	rm -rf id_iso_root_rsa{,.pub}
 
+spotless:
+	git clean -dffx
+	git submodule foreach --recursive git clean -dffx
+
 # download the base install image
-buster_original.iso :
-	wget $(BUSTERURL) -O $@
+debian_original.iso :
+	wget $(DEBIAN_ISO_URL) -O $@
 
 # extract the contents of the image
-iso/README.txt : buster_original.iso
+$(ISO_EXTRACTED_FLAG) : debian_original.iso
 	mkdir -p iso
 	cd iso && 7z x ../$<
 	touch $@
 
 # copy the preseed file to the appropriate location (using m4 to expand macros)
-iso/preseed/autoinstall-preseed.seed: autoinstall-preseed.m4 iso/README.txt
+iso/preseed/autoinstall-preseed.seed: autoinstall-preseed.m4 \
+		$(ISO_EXTRACTED_FLAG)
 	mkdir -p iso/preseed
 	m4 -P $< > $@
 
 # backup the old grub.cfg
-iso/boot/grub/grub.cfg.orig: iso/README.txt
+iso/boot/grub/grub.cfg.orig: $(ISO_EXTRACTED_FLAG)
 	cp iso/boot/grub/grub.cfg $@
 
 # update the grub.cfg to include a menu option for a preseeded install
@@ -33,7 +39,7 @@ iso/boot/grub/grub.cfg: grub.cfg.tail iso/boot/grub/grub.cfg.orig
 	cat grub.cfg.tail >> iso/boot/grub/grub.cfg
 
 # backup the old isolinux.cfg
-iso/isolinux/isolinux.cfg.orig: iso/README.txt
+iso/isolinux/isolinux.cfg.orig: $(ISO_EXTRACTED_FLAG)
 	cp iso/isolinux/isolinux.cfg $@
 
 # update the grub.cfg to do a preseeded install
@@ -52,14 +58,14 @@ iso/authorized_keys: id_iso_root_rsa.pub
 	cp $< $@
 
 # generate the new iso install image
-$(TARGET): iso/preseed/autoinstall-preseed.seed iso/boot/grub/grub.cfg \
+$(TARGET_ISO): iso/preseed/autoinstall-preseed.seed iso/boot/grub/grub.cfg \
 		iso/isolinux/isolinux.cfg iso/authorized_keys
 	genisoimage -o $@ -b isolinux/isolinux.bin -c isolinux/boot.cat \
 		-no-emul-boot -boot-load-size 4 -boot-info-table -J -R \
-		-V "Debian Buster AutoInstall" iso
+		-V "Debian AutoInstall" iso
 
 # create a virtual hard disk image for a qemu virtual machine for testing
-qemu-test-image.qcow2 : $(TARGET)
+qemu-test-image.qcow2 : $(TARGET_ISO)
 	qemu-img create -f qcow2 $@ 8G
 
 # Boot a qemu virtual machine using the new iso install file to test it
@@ -70,7 +76,7 @@ qemu-test-image.qcow2 : $(TARGET)
 # Note that you can unlock the VM in an automated fashion as follows:
 # printf "temp" | ssh root@localhost -p 10023 -i id_iso_root_rsa
 #
-qemu-test : qemu-test-image.qcow2 $(TARGET)
-	qemu-system-x86_64 -hda $< -cdrom $(TARGET) -m 512M -smp 1 -accel kvm \
+qemu-test : qemu-test-image.qcow2 $(TARGET_ISO)
+	qemu-system-x86_64 -hda $< -cdrom $(TARGET_ISO) -m 512M -smp 1 -accel kvm \
 		-nic user,hostfwd=tcp:127.0.0.1:10022-:22,hostfwd=tcp:127.0.0.1:10023-:23 \
 		-curses # -boot d
