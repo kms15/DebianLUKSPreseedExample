@@ -1,8 +1,8 @@
 *.iso
 iso
 *.qcow2
-id_iso_root_rsa
-id_iso_root_rsa.pub
+id_installer_rsa
+id_installer_rsa.pub
 *.swp
 initrd.pxe
 tftp

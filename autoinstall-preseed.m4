@@ -496,13 +496,15 @@ d-i finish-install/reboot_in_progress note
 # system booting to allow entering the LUKS password remotely.
 d-i preseed/late_command string in-target mkdir /root/.ssh ; \
     in-target chmod go-rwx /root/.ssh ; \
-    cp /cdrom/authorized_keys /target/root/.ssh/authorized_keys ; \
+    echo "REPLACE_WITH_SSH_PUBLIC_KEY" > /target/root/.ssh/authorized_keys ; \
     in-target chown -R root:root /root/.ssh ; \
     echo 'DROPBEAR_OPTIONS="-p 23 -s -j -k"' >> /target/etc/dropbear-initramfs/config ; \
-    sed -e 's/^/no-port-forwarding,no-agent-forwarding,no-x11-forwarding,command="\/bin\/cryptroot-unlock" /g' \
-        /cdrom/authorized_keys > /target/etc/dropbear-initramfs/authorized_keys ; \
+    echo "REPLACE_WITH_SSH_PUBLIC_KEY" | \
+        sed -e 's/^/no-port-forwarding,no-agent-forwarding,no-x11-forwarding,command="\/bin\/cryptroot-unlock" /g' - \
+        > /target/etc/dropbear-initramfs/authorized_keys ; \
     echo PasswordAuthentication no >> /target/etc/ssh/sshd_config ; \
     echo GRUB_TERMINAL=console >> /target/etc/default/grub ; \
+    in-target update-initramfs -u ; \
     in-target update-grub
 
 # Verbose output and no boot splash screen.
