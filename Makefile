@@ -1,5 +1,5 @@
 TARGET_ISO=debian_luks_autoinstall.iso
-DEBIAN_ISO_URL=https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-10.3.0-amd64-netinst.iso
+DEBIAN_ISO_URL=https://cdimage.debian.org/mirror/cdimage/archive/10.3.0/amd64/iso-cd/debian-10.3.0-amd64-netinst.iso
 ISO_EXTRACTED_TAG=iso/README.txt
 TFTP_COMPLETE_TAG=tftp/autoinstall.txt
 
